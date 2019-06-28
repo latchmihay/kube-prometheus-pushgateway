@@ -1,0 +1,4 @@
+artifacts/
+vendor/
+jsonnetfile.lock.json
+manifests/
