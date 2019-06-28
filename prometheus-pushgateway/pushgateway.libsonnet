@@ -2,7 +2,7 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
 
 {
   _config+:: {
-    namespace: 'default',
+    namespace: 'pushgateway',
 
     versions+:: {
       pushgateway: 'v0.8.0',
@@ -11,6 +11,14 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
     imageRepos+:: {
       pushgateway: 'prom/pushgateway',
     },
+
+    pushgateway+:: {
+        name: "prometheus-pushgateway",
+        port: 9091,
+        labels: { app: $._config.pushgateway.name},
+        cpu: "50m",
+        memory: "100Mi"
+    }
   },
 
   pushgateway+:: {
@@ -20,38 +28,34 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
       local containerPort = container.portsType;
       local podSelector = deployment.mixin.spec.template.spec.selectorType;
 
-      local port = 9091;
-      local name = "prometheus-pushgateway";
-      local podLabels = { app: 'prometheus-pushgateway' };
-
       local c =
         container.new('pushgateway', $._config.imageRepos.pushgateway + ':' + $._config.versions.pushgateway) +
-        container.withPorts(containerPort.newNamed(port, 'metrics')) +
-        container.mixin.resources.withRequests({ cpu: '50m', memory: '100Mi' }) +
-        container.mixin.resources.withLimits({ cpu: '50m', memory: '100Mi' }) +
+        container.withPorts(containerPort.newNamed($._config.pushgateway.port, 'metrics')) +
+        container.mixin.resources.withRequests({ cpu: $._config.pushgateway.cpu, memory: $._config.pushgateway.memory }) +
+        container.mixin.resources.withLimits({ cpu: $._config.pushgateway.cpu, memory: $._config.pushgateway.memory }) +
         container.mixin.livenessProbe.withInitialDelaySeconds(10) +
         container.mixin.livenessProbe.withTimeoutSeconds(10)+
         container.mixin.livenessProbe.httpGet.withPath("/#/status") +
-        container.mixin.livenessProbe.httpGet.withPort(port) +
+        container.mixin.livenessProbe.httpGet.withPort($._config.pushgateway.port) +
         container.mixin.readinessProbe.withInitialDelaySeconds(10) +
         container.mixin.readinessProbe.withTimeoutSeconds(10)+
         container.mixin.readinessProbe.httpGet.withPath("/#/status") +
-        container.mixin.readinessProbe.httpGet.withPort(port);
+        container.mixin.readinessProbe.httpGet.withPort($._config.pushgateway.port);
 
-      deployment.new('prometheus-pushgateway', 1, c, podLabels) +
+      deployment.new($._config.pushgateway.name, 1, c, $._config.pushgateway.labels) +
       deployment.mixin.metadata.withNamespace($._config.namespace) +
-      deployment.mixin.metadata.withLabels(podLabels) +
-      deployment.mixin.spec.selector.withMatchLabels(podLabels),
+      deployment.mixin.metadata.withLabels($._config.pushgateway.labels) +
+      deployment.mixin.spec.selector.withMatchLabels($._config.pushgateway.labels),
 
     service:
       local service = k.core.v1.service;
       local servicePort = k.core.v1.service.mixin.spec.portsType;
 
-      local pushgatewayPort = servicePort.newNamed('http', 9091, 'http');
+      local pushgatewayPort = servicePort.newNamed('http', $._config.pushgateway.port, 'http');
 
-      service.new('prometheus-pushgateway', $.pushgateway.deployment.spec.selector.matchLabels, pushgatewayPort) +
+      service.new($._config.pushgateway.name, $.pushgateway.deployment.spec.selector.matchLabels, pushgatewayPort) +
       service.mixin.metadata.withNamespace($._config.namespace) +
-      service.mixin.metadata.withLabels({ 'app': 'prometheus-pushgateway' }) +
+      service.mixin.metadata.withLabels($._config.pushgateway.labels) +
       service.mixin.spec.withType('ClusterIP'),
 
     serviceMonitor:
@@ -59,7 +63,7 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
         apiVersion: 'monitoring.coreos.com/v1',
         kind: 'ServiceMonitor',
         metadata: {
-          name: "prometheus-pushgateway",
+          name: $._config.pushgateway.name,
           namespace: $._config.namespace,
           labels: {
             'prometheus': 'k8s',
@@ -68,9 +72,7 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
         spec: {
           jobLabel: 'k8s-app',
           selector: {
-            matchLabels: {
-              "app": "prometheus-pushgateway"
-            },
+            matchLabels: $._config.pushgateway.labels,
           },
           endpoints: [
             {
