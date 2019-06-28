@@ -51,12 +51,6 @@ jb install github.com/latchmihay/kube-prometheus-pushgateway/prometheus-pushgate
 cat > withPromGateway.jsonnet <<EOF
 local kp =
   (import 'kube-prometheus/kube-prometheus.libsonnet') +
-  // Uncomment the following imports to enable its patches
-  // (import 'kube-prometheus/kube-prometheus-anti-affinity.libsonnet') +
-  // (import 'kube-prometheus/kube-prometheus-managed-cluster.libsonnet') +
-  // (import 'kube-prometheus/kube-prometheus-node-ports.libsonnet') +
-  // (import 'kube-prometheus/kube-prometheus-static-etcd.libsonnet') +
-  // (import 'kube-prometheus/kube-prometheus-thanos.libsonnet') +
   (import "prometheus-pushgateway/pushgateway.libsonnet") +
   {
     _config+:: {
@@ -77,4 +71,36 @@ EOF
 ./build.sh withPromGateway.jsonnet
 
 # everything is at manifests folder
+```
+
+## Usage along side kube-prometheus in a container
+```bash
+git clone https://github.com/coreos/kube-prometheus.git
+cd kube-prometheus
+cat > withPromGateway.jsonnet <<EOF
+local kp =
+  (import 'kube-prometheus/kube-prometheus.libsonnet') +
+  (import "prometheus-pushgateway/pushgateway.libsonnet") +
+  {
+    _config+:: {
+      namespace: 'monitoring',
+    },
+  };
+
+{ ['prometheus-pushgateway-' + name]: kp.pushgateway[name], for name in std.objectFields(kp.pushgateway) } +
+{ ['00namespace-' + name]: kp.kubePrometheus[name] for name in std.objectFields(kp.kubePrometheus) } +
+{ ['0prometheus-operator-' + name]: kp.prometheusOperator[name] for name in std.objectFields(kp.prometheusOperator) } +
+{ ['node-exporter-' + name]: kp.nodeExporter[name] for name in std.objectFields(kp.nodeExporter) } +
+{ ['kube-state-metrics-' + name]: kp.kubeStateMetrics[name] for name in std.objectFields(kp.kubeStateMetrics) } +
+{ ['alertmanager-' + name]: kp.alertmanager[name] for name in std.objectFields(kp.alertmanager) } +
+{ ['prometheus-' + name]: kp.prometheus[name] for name in std.objectFields(kp.prometheus) } +
+{ ['prometheus-adapter-' + name]: kp.prometheusAdapter[name] for name in std.objectFields(kp.prometheusAdapter) } +
+{ ['grafana-' + name]: kp.grafana[name] for name in std.objectFields(kp.grafana) }
+EOF
+
+docker run --rm -v $(pwd):$(pwd) --workdir $(pwd) quay.io/coreos/jsonnet-ci jb install github.com/latchmihay/kube-prometheus-pushgateway/prometheus-pushgateway
+
+docker run --rm -v $(pwd):$(pwd) --workdir $(pwd) quay.io/coreos/jsonnet-ci ./build.sh withPromGateway.jsonnet
+
+# all the yamls are in the manifests folder
 ```
