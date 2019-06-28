@@ -8,7 +8,7 @@ It is aimed to be used and consumbed by [coreos/kube-prometheus](https://github.
 Use this package in your own infrastructure using [`jsonnet-bundler`](https://github.com/jsonnet-bundler/jsonnet-bundler):
 
 ```bash
-jb install github.com/latchmihay/kube-prometheus-pushgateway/pushgateway
+jb install github.com/latchmihay/kube-prometheus-pushgateway/prometheus-pushgateway
 ```
 
 An example of how to use it could be: (save as example.jsonnet)
@@ -47,8 +47,8 @@ cat manifests/*
 ```bash
 git clone https://github.com/coreos/kube-prometheus.git
 cd kube-prometheus
-jb install github.com/latchmihay/kube-prometheus-pushgateway/pushgateway
-cat > withPromGateway.jsonet <<EOF
+jb install github.com/latchmihay/kube-prometheus-pushgateway/prometheus-pushgateway
+cat > withPromGateway.jsonnet <<EOF
 local kp =
   (import 'kube-prometheus/kube-prometheus.libsonnet') +
   // Uncomment the following imports to enable its patches
@@ -74,7 +74,7 @@ local kp =
 { ['prometheus-adapter-' + name]: kp.prometheusAdapter[name] for name in std.objectFields(kp.prometheusAdapter) } +
 { ['grafana-' + name]: kp.grafana[name] for name in std.objectFields(kp.grafana) }
 EOF
-./build.sh withPromGateway.jsonet
+./build.sh withPromGateway.jsonnet
 
 # everything is at manifests folder
 ```
