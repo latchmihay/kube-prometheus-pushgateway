@@ -51,7 +51,7 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
       local service = k.core.v1.service;
       local servicePort = k.core.v1.service.mixin.spec.portsType;
 
-      local pushgatewayPort = servicePort.newNamed('http', $._config.pushgateway.port, 'http');
+      local pushgatewayPort = servicePort.newNamed('http', $._config.pushgateway.port, 'metrics');
 
       service.new($._config.pushgateway.name, $.pushgateway.deployment.spec.selector.matchLabels, pushgatewayPort) +
       service.mixin.metadata.withNamespace($._config.namespace) +
