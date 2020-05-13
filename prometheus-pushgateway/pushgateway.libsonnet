@@ -23,7 +23,7 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
 
   pushgateway+:: {
     deployment:
-      local deployment = k.apps.v1beta2.deployment;
+      local deployment = k.apps.v1.deployment;
       local container = deployment.mixin.spec.template.spec.containersType;
       local containerPort = container.portsType;
       local podSelector = deployment.mixin.spec.template.spec.selectorType;
