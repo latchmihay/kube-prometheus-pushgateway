@@ -32,6 +32,15 @@ Simply run:
 $ jsonnet -J vendor example.jsonnet
 ```
 
+## Quickstart
+This quickstart requires the kube-prometheus to already be deployed and the go module path($GOPATH/bin) to be a part of $PART.
+
+Running this one command then should be enough:
+
+```bash
+make deploy
+```
+
 ## Generate Yamls (Similar to the way kube-prometheus works)
 ```bash
 go get github.com/jsonnet-bundler/jsonnet-bundler/cmd/jb
