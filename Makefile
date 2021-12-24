@@ -1,3 +1,7 @@
+GOPATH?=$(HOME)/go
+BIN_DIR=$(GOPATH)/bin
+export PATH:=$(BIN_DIR):$(PATH)
+
 init: jb
 	cd prometheus-pushgateway && jb install
 

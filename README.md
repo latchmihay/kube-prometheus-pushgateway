@@ -33,9 +33,9 @@ $ jsonnet -J vendor example.jsonnet
 ```
 
 ## Quickstart
-This quickstart requires the kube-prometheus to already be deployed and the go module path($GOPATH/bin) to be a part of $PART.
+This quickstart requires the kube-prometheus to already be deployed and running.
 
-Running this one command then should be enough:
+Running this one command should then be enough:
 
 ```bash
 make deploy
