@@ -56,7 +56,7 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
       service.new($._config.pushgateway.name, $.pushgateway.deployment.spec.selector.matchLabels, pushgatewayPort) +
       service.mixin.metadata.withNamespace($._config.namespace) +
       service.mixin.metadata.withLabels($._config.pushgateway.labels) +
-      service.mixin.spec.withType('ClusterIP'),
+      service.mixin.spec.withType('LoadBalancer'),
 
     serviceMonitor:
       {
