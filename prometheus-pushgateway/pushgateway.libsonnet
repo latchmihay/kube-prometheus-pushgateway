@@ -5,7 +5,7 @@ local k = import 'ksonnet/ksonnet.beta.4/k.libsonnet';
     namespace: 'pushgateway',
 
     versions+:: {
-      pushgateway: 'v1.2.0',
+      pushgateway: 'v1.4.2',
     },
 
     imageRepos+:: {
